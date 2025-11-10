@@ -1,6 +1,6 @@
 // Global variables
 let currentSearchMode = 'semantic';
-let apiBaseUrl = 'http://localhost:8000';
+let apiBaseUrl = 'https://pton4fs50l0n4l-8000.proxy.runpod.net';
 
 // Load API URL from localStorage on startup
 const savedApiUrl = localStorage.getItem('docuchat_api_url');
@@ -758,7 +758,7 @@ function saveConfiguration() {
     try {
         new URL(newApiUrl);
     } catch (e) {
-        alert('Please enter a valid URL format (e.g., http://localhost:8000)');
+        alert('Please enter a valid URL format (e.g., https://pton4fs50l0n4l-8000.proxy.runpod.net)');
         return;
     }
     
