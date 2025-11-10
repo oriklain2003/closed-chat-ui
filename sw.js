@@ -11,7 +11,7 @@ const ASSETS = [
   'onyxicon2.png',
   'emo.png',
   'lol.png',
-  'help.png',
+  'question.png',
   'settings.png',
   // sub-pages/screenshots for help/reference (optional)
   'collapsible_sidebar_(controls_panel)/code.html',
