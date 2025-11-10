@@ -470,7 +470,11 @@ function createSemanticResponseElement(result) {
     container.className = 'flex flex-col gap-3 w-full';
 
     const answerText = result.answer || result.message;
-    if (answerText) {
+    const structuredAnswer = answerText ? parseStructuredSemanticAnswer(answerText) : null;
+
+    if (structuredAnswer) {
+        container.appendChild(createStructuredAnswerElement(structuredAnswer));
+    } else if (answerText) {
         const answerEl = document.createElement('p');
         answerEl.className = 'text-white/90 whitespace-pre-line';
         answerEl.textContent = answerText;
@@ -494,7 +498,7 @@ function createSemanticResponseElement(result) {
             counts.push(`${docIds.length} paragraph id${docIds.length === 1 ? '' : 's'}`);
         }
         header.innerHTML = `
-            <span class="text-white/70 text-xs uppercase tracking-[0.2em]">Summary</span>
+            <span class="text-white/70 text-xs uppercase tracking-[0.2em]">מקורות</span>
             <span class="text-white/50 text-xs">${counts.join(' • ')}</span>
         `;
         summaryCard.appendChild(header);
@@ -559,6 +563,102 @@ function formatConfidenceLabel(confidence) {
     const label = String(confidence || '').trim();
     if (!label) return '';
     return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+function parseStructuredSemanticAnswer(answer) {
+    if (!answer) return null;
+    const lines = answer.split('\n').map(line => line.trim()).filter(Boolean);
+    if (!lines.length) return null;
+
+    const knownSections = ['summary', 'relevant clauses', 'conditions', 'confidence'];
+    const sections = {};
+    let currentKey = null;
+
+    lines.forEach(line => {
+        const match = line.match(/^([A-Za-z\s]+):\s*(.*)$/);
+        if (match) {
+            const rawKey = match[1].toLowerCase();
+            if (knownSections.includes(rawKey)) {
+                currentKey = rawKey.replace(/\s+/g, '_');
+                const initialValue = match[2] || '';
+                sections[currentKey] = initialValue ? [initialValue] : [];
+                return;
+            }
+        }
+        if (currentKey) {
+            sections[currentKey].push(line);
+        }
+    });
+
+    if (!Object.keys(sections).length) return null;
+
+    Object.keys(sections).forEach(key => {
+        sections[key] = sections[key].join('\n').trim();
+    });
+
+    return sections;
+}
+
+function createStructuredAnswerElement(sections) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'flex flex-col gap-3';
+
+    if (sections.summary) {
+        wrapper.appendChild(createSectionCard('סיכום', sections.summary));
+    }
+
+    if (sections.relevant_clauses) {
+        const clausesCard = createSectionCard('סעיפים רלוונטיים', sections.relevant_clauses);
+        clausesCard.classList.add('bg-[#171717]');
+        const body = clausesCard.querySelector('[data-section-body]');
+        if (body) {
+            body.classList.add('whitespace-pre-line', 'text-sm', 'leading-relaxed');
+        }
+        wrapper.appendChild(clausesCard);
+    }
+
+    if (sections.conditions) {
+        const conditionsCard = createSectionCard('תנאים', sections.conditions);
+        wrapper.appendChild(conditionsCard);
+    }
+
+    if (sections.confidence) {
+        const confidenceCard = document.createElement('div');
+        confidenceCard.className = 'flex items-center gap-2';
+
+        const label = document.createElement('span');
+        label.className = 'text-white/70 text-xs uppercase tracking-[0.2em]';
+        label.textContent = 'רמת סמך';
+
+        const pill = document.createElement('span');
+        pill.className = 'px-3 py-1 rounded-full bg-[#222222] border border-white/10 text-white text-sm';
+        pill.textContent = sections.confidence;
+
+        confidenceCard.appendChild(label);
+        confidenceCard.appendChild(pill);
+        wrapper.appendChild(confidenceCard);
+    }
+
+    return wrapper;
+}
+
+function createSectionCard(title, content) {
+    const card = document.createElement('div');
+    card.className = 'flex flex-col gap-2 rounded-lg bg-[#1e1e1e] border border-white/10 p-3';
+
+    const header = document.createElement('div');
+    header.className = 'text-white/70 text-xs uppercase tracking-[0.2em]';
+    header.textContent = title;
+
+    const body = document.createElement('p');
+    body.setAttribute('data-section-body', 'true');
+    body.className = 'text-white text-sm leading-relaxed whitespace-pre-line';
+    body.textContent = content;
+
+    card.appendChild(header);
+    card.appendChild(body);
+
+    return card;
 }
 
 async function copyToClipboard(text, buttonEl) {
