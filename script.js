@@ -17,6 +17,7 @@ let topKValue, scoreThresholdValue, topKFill, scoreThresholdFill, resetParams;
 let configButton, configPopup, closeConfig, apiEndpointInput, testConnectionButton, saveConfigButton;
 let statusIndicator, statusText;
 let pagePopup, closePagePopupBtn, pageDocIdEl, copyDocIdBtn, pageFileNameEl, pageMetaEl, pageKeywordEl, pagePreviewTextEl;
+let pageKeywordSeparator, defaultCopyButtonText;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
@@ -66,6 +67,12 @@ function initializeElements() {
     pageMetaEl = document.getElementById('page_meta');
     pageKeywordEl = document.getElementById('page_keyword');
     pagePreviewTextEl = document.getElementById('page_preview_text');
+    if (pageKeywordEl) {
+        pageKeywordSeparator = pageKeywordEl.nextSibling;
+    }
+    if (copyDocIdBtn) {
+        defaultCopyButtonText = copyDocIdBtn.textContent || '';
+    }
 }
 
 function initializeSliders() {
@@ -483,6 +490,7 @@ function createSemanticResponseElement(result) {
 
     const sources = Array.isArray(result.sources) ? result.sources : [];
     const docIds = Array.isArray(result.document_ids) ? result.document_ids : [];
+    const chunks = Array.isArray(result.chunks) ? result.chunks : [];
 
     if (sources.length || docIds.length) {
         const summaryCard = document.createElement('div');
@@ -513,26 +521,87 @@ function createSemanticResponseElement(result) {
         if (docIds.length) {
             const idsLabel = document.createElement('p');
             idsLabel.className = 'text-white/80 text-sm leading-relaxed';
-            idsLabel.textContent = 'In these paragraph IDs we found the answers:';
-            summaryCard.appendChild(idsLabel);
 
-            const idsRow = document.createElement('div');
-            idsRow.className = 'flex flex-wrap gap-2';
 
-            docIds.forEach(id => {
-                const chip = document.createElement('button');
-                chip.type = 'button';
-                chip.className = 'px-2 py-1 rounded-md bg-[#222222] text-white/80 text-xs border border-white/10 hover:bg-[#262626] active:scale-[0.98] transition';
-                chip.textContent = id;
-                chip.title = 'Copy paragraph ID';
-                chip.addEventListener('click', () => copyToClipboard(id, chip));
-                idsRow.appendChild(chip);
-            });
 
-            summaryCard.appendChild(idsRow);
         }
 
         container.appendChild(summaryCard);
+    }
+
+    if (chunks.length) {
+        const chunksCard = document.createElement('div');
+        chunksCard.className = 'flex flex-col gap-3 rounded-lg bg-[#171717] border border-white/10 p-3';
+
+        const header = document.createElement('div');
+        header.className = 'flex items-center justify-between';
+        header.innerHTML = `
+            <span class="text-white/70 text-xs uppercase tracking-[0.2em]">קטעי מקור</span>
+            <span class="text-white/50 text-xs">${chunks.length} תוצאה${chunks.length === 1 ? '' : 'ות'}</span>
+        `;
+        chunksCard.appendChild(header);
+
+        const chunkList = document.createElement('div');
+        chunkList.className = 'flex flex-col gap-2';
+
+        chunks.forEach((chunk, index) => {
+            const chunkButton = document.createElement('button');
+            chunkButton.type = 'button';
+            chunkButton.className = 'group w-full text-left rounded-lg border border-white/10 bg-[#1d1d1d]/80 hover:bg-[#222222] transition-colors px-3 py-3';
+
+            const topRow = document.createElement('div');
+            topRow.className = 'flex items-center justify-between gap-3';
+
+            const titleWrap = document.createElement('div');
+            titleWrap.className = 'flex-1 min-w-0';
+
+            const title = document.createElement('div');
+            title.className = 'text-white font-medium truncate';
+            title.textContent = chunk.source || `קטע ${index + 1}`;
+            titleWrap.appendChild(title);
+
+            const metaBits = [];
+            if (typeof chunk.page_num === 'number') {
+                metaBits.push(`עמוד ${chunk.page_num}`);
+            }
+            if (typeof chunk.score === 'number') {
+                metaBits.push(`ציון ${chunk.score.toFixed(3)}`);
+            }
+            if (typeof chunk.word_count === 'number') {
+                metaBits.push(`${chunk.word_count} מילים`);
+            }
+            const metaText = metaBits.join(' • ');
+            if (metaText) {
+                const meta = document.createElement('div');
+                meta.className = 'text-white/60 text-xs mt-1 truncate';
+                meta.textContent = metaText;
+                titleWrap.appendChild(meta);
+            }
+
+            const icon = document.createElement('span');
+            icon.className = 'material-symbols-outlined text-white/40 transition-colors group-hover:text-white/70 shrink-0';
+            icon.textContent = 'visibility';
+
+            topRow.appendChild(titleWrap);
+            topRow.appendChild(icon);
+            chunkButton.appendChild(topRow);
+
+            const snippet = document.createElement('p');
+            snippet.className = 'text-white/70 text-sm leading-relaxed mt-2';
+            if (chunk.text) {
+                const normalized = chunk.text.replace(/\s+/g, ' ').trim();
+                snippet.textContent = normalized.length > 180 ? `${normalized.slice(0, 180)}…` : normalized;
+            } else {
+                snippet.textContent = '—';
+            }
+            chunkButton.appendChild(snippet);
+
+            chunkButton.addEventListener('click', () => showChunkPreview(chunk, index + 1));
+            chunkList.appendChild(chunkButton);
+        });
+
+        chunksCard.appendChild(chunkList);
+        container.appendChild(chunksCard);
     }
 
     const metaBits = [];
@@ -674,13 +743,49 @@ async function copyToClipboard(text, buttonEl) {
     }
 }
 
-function showPagePopup(page, fileSource, keyword) {
+function showPagePopup(page, fileSource, keyword, options = {}) {
     if (!pagePopup) return;
-    pageFileNameEl.textContent = fileSource;
-    pageKeywordEl.textContent = `מילת חיפוש: "${keyword}"`;
-    pageMetaEl.textContent = `עמוד ${page.page_num} • ${page.occurrences} הופעות`;
-    pageDocIdEl.textContent = page.id || '';
-    pagePreviewTextEl.textContent = page.text || '';
+    const title = options.title || fileSource || 'Document';
+    pageFileNameEl.textContent = title;
+
+    const keywordLabel = typeof options.keywordLabel === 'string'
+        ? options.keywordLabel
+        : (keyword ? `מילת חיפוש: "${keyword}"` : '');
+
+    if (keywordLabel) {
+        pageKeywordEl.textContent = keywordLabel;
+        pageKeywordEl.classList.remove('hidden');
+    } else {
+        pageKeywordEl.textContent = '';
+        pageKeywordEl.classList.add('hidden');
+    }
+
+    if (pageKeywordSeparator && pageKeywordSeparator.nodeType === Node.TEXT_NODE) {
+        pageKeywordSeparator.textContent = keywordLabel ? ' • ' : '';
+    }
+
+    const metaParts = Array.isArray(options.meta) && options.meta.length
+        ? options.meta
+        : buildDefaultMetaParts(page);
+    pageMetaEl.textContent = metaParts.filter(Boolean).join(' • ');
+
+    const resolvedDocId = Object.prototype.hasOwnProperty.call(options, 'docId')
+        ? options.docId
+        : (page && page.id ? page.id : '');
+
+    pageDocIdEl.textContent = resolvedDocId || '';
+
+    if (copyDocIdBtn) {
+        copyDocIdBtn.style.display = resolvedDocId ? '' : 'none';
+        const copyText = options.copyButtonText || defaultCopyButtonText || copyDocIdBtn.textContent;
+        copyDocIdBtn.textContent = copyText;
+    }
+
+    const previewText = Object.prototype.hasOwnProperty.call(options, 'text')
+        ? options.text
+        : (page && page.text ? page.text : '');
+    pagePreviewTextEl.textContent = previewText || '';
+
     pagePopup.classList.remove('hidden');
     pagePopup.classList.add('flex');
 }
@@ -689,6 +794,45 @@ function hidePagePopup() {
     if (!pagePopup) return;
     pagePopup.classList.add('hidden');
     pagePopup.classList.remove('flex');
+}
+
+function buildDefaultMetaParts(page) {
+    const parts = [];
+    if (!page) return parts;
+    if (typeof page.page_num === 'number') {
+        parts.push(`עמוד ${page.page_num}`);
+    }
+    if (typeof page.occurrences === 'number') {
+        parts.push(`${page.occurrences} הופעות`);
+    }
+    return parts;
+}
+
+function showChunkPreview(chunk, index) {
+    const metaParts = [];
+    if (typeof chunk.page_num === 'number') {
+        metaParts.push(`עמוד ${chunk.page_num}`);
+    }
+    if (typeof chunk.score === 'number') {
+        metaParts.push(`ציון ${chunk.score.toFixed(3)}`);
+    }
+    if (typeof chunk.word_count === 'number') {
+        metaParts.push(`${chunk.word_count} מילים`);
+    }
+
+    showPagePopup(
+        { id: chunk.id, text: chunk.text },
+        chunk.source || `קטע ${index}`,
+        null,
+        {
+            title: chunk.source || `קטע ${index}`,
+            meta: metaParts,
+            docId: chunk.id || '',
+            text: chunk.text || '',
+            copyButtonText: 'Copy chunk ID',
+            keywordLabel: ''
+        }
+    );
 }
 
 // Config functions
