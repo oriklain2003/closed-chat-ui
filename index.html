@@ -232,15 +232,18 @@
     
     <!-- Help Popup -->
     <div id="help_popup" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 transition-opacity duration-300 animate-fadeIn hidden" dir="rtl">
-        <div class="relative w-full max-w-2xl bg-black/20 border border-white/10 text-white rounded-xl shadow-2xl backdrop-blur-2xl transition-transform duration-300 animate-scaleIn p-8 help-popup-artistic">
-            <button id="close_help" class="absolute top-4 left-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-colors z-10">
-                <img src="close.png" alt="Close" class="h-5 w-5" />
-            </button>
-            <div class="flex flex-col gap-2">
-                <h1 class="text-3xl font-bold tracking-tight text-white/95">מדריך למצבי חיפוש</h1>
-                <p class="text-white/70">מדריך זה מסביר את מצבי החיפוש השונים הזמינים, השימוש בהם ומגבלותיהם.</p>
+        <div class="relative w-full max-w-2xl max-h-[90vh] bg-black/20 border border-white/10 text-white rounded-xl shadow-2xl backdrop-blur-2xl transition-transform duration-300 animate-scaleIn flex flex-col help-popup-artistic">
+            <div class="flex-shrink-0 p-8 pb-4">
+                <button id="close_help" class="absolute top-4 left-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-colors z-10">
+                    <img src="close.png" alt="Close" class="h-5 w-5" />
+                </button>
+                <div class="flex flex-col gap-2">
+                    <h1 class="text-3xl font-bold tracking-tight text-white/95">מדריך למצבי חיפוש</h1>
+                    <p class="text-white/70">מדריך זה מסביר את מצבי החיפוש השונים הזמינים, השימוש בהם ומגבלותיהם.</p>
+                </div>
             </div>
-            <div class="mt-8 flex flex-col gap-4">
+            <div class="flex-1 overflow-y-auto px-8 pb-8">
+            <div class="mt-4 flex flex-col gap-4">
                 <!-- Accordion Item 1 -->
                 <details class="help-accordion-item" open="">
                     <summary class="help-accordion-summary">
@@ -253,12 +256,14 @@
                         </div>
                     </summary>
                     <div class="help-accordion-content">
-                        <p>חיפוש סמנטי מבין את המשמעות וההקשר של השאילתה שלך, ומחזיר תוצאות רלוונטיות מבחינה רעיונית, גם אם אינן מכילות את מילות המפתח המדויקות. מצוין לשאלות מורכבות ורעיונות מופשטים.</p>
-                        <div class="space-y-1">
-                            <h4 class="font-semibold text-white/70">מגבלות:</h4>
+                        <p>תפקידו למצוא הקשרים ותשובות על בסיס המשמעות ולא רק על פי מילות מפתח. ניתן לשאול שאלות במיקוד על שאלות חיפוש סמנטיות/הקשר, והמערכת תחפש את המידע אך ורק מתוך המסמכים שהועלו לפי ההקשר המבוקש.</p>
+                        <div class="space-y-2 mt-3">
+                            <h4 class="font-semibold text-white/70">מבנה התשובה:</h4>
                             <ul class="list-disc pr-5 space-y-1 text-sm text-white/70">
-                                <li>עשוי להיות איטי יותר מחיפוש מילות מפתח.</li>
-                                <li>פחות יעיל למציאת מונחים או קודים ספציפיים.</li>
+                                <li>בחלק העליון - סיכום התשובה מכל ההקשרים הרלוונטיים</li>
+                                <li>מתחת - X פסקאות הכי רלוונטיות (X ניתן לקביעה ע"י המשתמש)</li>
+                                <li>לחיצה על כותרת הפסקה תפתח את תוכן הפסקה</li>
+                                <li>קוד מזהה (ID) מופיע בחלק העליון וניתן להעתקה</li>
                             </ul>
                         </div>
                     </div>
@@ -276,12 +281,18 @@
                         </div>
                     </summary>
                     <div class="help-accordion-content">
-                        <p>מצב זה מחפש התאמות מדויקות של המילים שסיפקת במסמכים. אידיאלי למציאת שמות, מזהים, או ציטוטים ספציפיים במהירות וביעילות.</p>
-                        <div class="space-y-1">
-                            <h4 class="font-semibold text-white/70">מגבלות:</h4>
+                        <p>המטרה – לאתר מילה או ביטוי מדויק בתוך המסמכים, בדומה לפונקציית Find ב-Word.</p>
+                        <div class="space-y-2 mt-3">
+                            <h4 class="font-semibold text-white/70">הנחיות:</h4>
                             <ul class="list-disc pr-5 space-y-1 text-sm text-white/70">
-                                <li>לא ימצא מילים נרדפות או מושגים קשורים.</li>
-                                <li>דורש לדעת את המונחים המדויקים לחיפוש.</li>
+                                <li>יש להקליד את המילה או המחרוזת המדויקת בשפה שבה נכתב המסמך (אנגלית, עברית וכ"ו)</li>
+                                <li>ניתן גם לחפש מספרים, תאריכים ושעות</li>
+                            </ul>
+                            <h4 class="font-semibold text-white/70 mt-3">תוצאה:</h4>
+                            <ul class="list-disc pr-5 space-y-1 text-sm text-white/70">
+                                <li>תוצג רשימה של כל המקומות בהם מופיעה המחרוזת</li>
+                                <li>לחיצה על כל תוצאה מאפשרת לראות את הקטע המלא שבו נמצאת המילה</li>
+                                <li>מתקבל קוד מזהה (ID) שניתן להעתקה לשימוש בסוגי חיפוש שונים</li>
                             </ul>
                         </div>
                     </div>
@@ -292,22 +303,80 @@
                     <summary class="help-accordion-summary">
                         <div class="flex items-center gap-4">
                             <img src="merge_type.png" alt="Merge" class="h-5 w-5"/>
-                            <h3 class="text-lg font-semibold text-white/90">חיפוש היברידי</h3>
+                            <h3 class="text-lg font-semibold text-white/90">חיפוש בפסקאות ספציפיות</h3>
                         </div>
                         <div class="transform transition-transform duration-300 group-open:rotate-180">
                             <span class="material-symbols-outlined text-white/60">expand_more</span>
                         </div>
                     </summary>
                     <div class="help-accordion-content">
-                        <p>החיפוש ההיברידי משלב את העוצמה של חיפוש סמנטי עם הדיוק של חיפוש מילות מפתח. הוא מספק את התוצאות הרלוונטיות ביותר על ידי איזון בין הבנת הקשר לבין התאמות מדויקות.</p>
-                        <div class="space-y-1">
-                            <h4 class="font-semibold text-white/70">מגבלות:</h4>
+                        <p>המטרה – לאפשר חיפוש ממוקד בתוך פסקאות שעלו בחיפושים קודמים.</p>
+                        <div class="space-y-2 mt-3">
+                            <h4 class="font-semibold text-white/70">הנחיות:</h4>
                             <ul class="list-disc pr-5 space-y-1 text-sm text-white/70">
-                                <li>תוצאות החיפוש עשויות להיות מורכבות יותר להבנה.</li>
+                                <li>הזן את קוד הפסקה (ID) שהועתק מחיפוש קודם</li>
+                                <li>ניתן להזין כמה מספרים, מופרדים בפסיקים</li>
+                                <li>שאל שאלה ממוקדת על הפסקאות שנבחרו</li>
                             </ul>
                         </div>
                     </div>
                 </details>
+            </div>
+            
+            <!-- Additional Sections -->
+            <div class="mt-8 pt-8 border-t border-white/10 flex flex-col gap-6">
+                <!-- System Overview -->
+                <div class="flex flex-col gap-3">
+                    <div class="flex items-center gap-3">
+                        <img src="onyxicon.jpg" alt="Onyx" class="h-5 w-5 rounded-full"/>
+                        <h2 class="text-xl font-bold text-white/95">אודות המערכת</h2>
+                    </div>
+                    <div class="pr-2 space-y-2 text-white/80 text-sm leading-relaxed">
+                        <p>מערכת Search AI ONYX היא אב טיפוס (POC) שנועדה לאפשר חיפוש חכם למידע מתוך מסמכים שנטענו לספריה ייעודית. המערכת פועלת בסביבה סגורה (Premise On) ומבצעת שליפת מידע רק מתוך המסמכים שנטענו לספרייה הייעודית.</p>
+                        <div class="space-y-1 mt-3">
+                            <h4 class="font-semibold text-white/70">מגבלות המערכת:</h4>
+                            <ul class="list-disc pr-5 space-y-1">
+                                <li>ממשק משתמש - באנגלית בלבד</li>
+                                <li>אב הטיפוס לא פותח למציאת נתונים טבלאיים או לביצוע סכימות וחישובים של סכומים מתוך טקסט</li>
+                                <li>יש לדייק בשאלות - ככל שהשאלה תהיה מדויקת יותר, החיפוש יעבור על כל המסמכים ויאתר את המידע הנדרש</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Supported Formats -->
+                <div class="flex flex-col gap-3">
+                    <div class="flex items-center gap-3">
+                        <img src="api.png" alt="Formats" class="h-5 w-5"/>
+                        <h2 class="text-xl font-bold text-white/95">פורמטים ושפות נתמכות</h2>
+                    </div>
+                    <div class="pr-2 space-y-2 text-white/80 text-sm leading-relaxed">
+                        <ul class="list-disc pr-5 space-y-1">
+                            <li><strong>שפות מסמכים:</strong> כל שפה (עברית, אנגלית, צרפתית, וכ"ו)</li>
+                            <li><strong>פורמטים נתמכים:</strong> Docx (אפשרי גם Doc אך איכות החיפוש תפגע)</li>
+                            <li><strong>כמות מסמכים:</strong> ניתן לטעון כמות מסמכים לפי גודל חומרה מוקצת</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Basic Operation -->
+                <div class="flex flex-col gap-3">
+                    <div class="flex items-center gap-3">
+                        <img src="help.png" alt="Help" class="h-5 w-5"/>
+                        <h2 class="text-xl font-bold text-white/95">תפעול בסיסי של המערכת</h2>
+                    </div>
+                    <div class="pr-2 space-y-2 text-white/80 text-sm leading-relaxed">
+                        <ol class="list-decimal pr-5 space-y-2">
+                            <li>בחר את סוג החיפוש הרצוי: סמנטי/מילה/מקטע</li>
+                            <li>הקלד את השאלה או הביטוי הרצוי</li>
+                            <li>עיין בתוצאות, לחץ על כותרת כדי לפתוח מקורות מידע</li>
+                            <li>העתק את קוד ה-ID במידת הצורך והשתמש בו להמשך חיפושים ממוקדים</li>
+                        </ol>
+                    </div>
+                </div>
+                
+
+            </div>
             </div>
         </div>
     </div>

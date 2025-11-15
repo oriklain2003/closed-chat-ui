@@ -346,3 +346,27 @@ body {
     color: rgba(255,255,255,0.8);
     background: rgba(0,0,0,0.1);
 }
+
+/* Help popup scrollable area */
+#help_popup .overflow-y-auto {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.2) rgba(0,0,0,0.2);
+}
+
+#help_popup .overflow-y-auto::-webkit-scrollbar {
+    width: 8px;
+}
+
+#help_popup .overflow-y-auto::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.2);
+    border-radius: 4px;
+}
+
+#help_popup .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+}
+
+#help_popup .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.3);
+}
